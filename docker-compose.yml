@@ -1,11 +1,17 @@
 version: "3"
 services:
   db:
-    # TODO: configura tu imagen de base de datos, te recomendamos una de estas:
-    # https://hub.docker.com/_/mongo
-    # https://hub.docker.com/_/postgres
-    # https://hub.docker.com/_/mysql
+    image: mongo:4
+    volumes:
+    - ./db-data:/data/db
+    ports:
+      - 28017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bq
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    restart: always
     networks:
+      - public
       - private
   node:
     image: node:12 # https://hub.docker.com/_/node/
@@ -14,7 +20,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 8080
-      DB_URL: <CONNECTION STRING>
+      DB_URL: mongodb://bq:secret@localhost:27017/bq?authSource=admin
       JWT_SECRET: xxxxxxxx
       ADMIN_EMAIL: admin@localhost
       ADMIN_PASSWORD: changeme
@@ -23,9 +29,9 @@ services:
     expose:
       - 8080 # nuestra app corre en el puerto 8080
     ports:
-      # mapeamos el puerto 8080 de nuestro contenedor al puerto 80 de nuestra
+      # mapeamos el puerto 8080 de nuestro contenedor al puerto 3050 de nuestra
       # máquina
-      - 80:8080
+      - 3050:8080
     # reinstalamos las dependencias y levantamos el servidor
     command: bash -c 'rm -rf node_modules && npm install && npm start'
     depends_on:
